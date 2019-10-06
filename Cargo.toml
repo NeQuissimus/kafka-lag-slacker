@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 reqwest = "0.9.21"
+slack-hook = "0.8.0"
