@@ -16,7 +16,7 @@ in rustPlatform.buildRustPackage rec {
   nativeBuildInputs = [ openssl pkgconfig ];
 
   doCheck = false;
-  cargoSha256 = "sha256:0jacm96l1gw9nxwavqi1x4669cg6lzy9hr18zjpwlcyb3qkw9z7f";
+  cargoSha256 = "sha256:0m8ssn7vhlscn560wp0smhdw2910zmasvjw6a6kzq7b9ql6z2w0z";
 
   meta = with pkgs.lib; {
     license = licenses.mit;

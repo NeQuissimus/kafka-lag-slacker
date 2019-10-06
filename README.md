@@ -8,3 +8,7 @@
 ## Debug build
 
 `nix-shell -p cargo -p pkgconfig -p openssl -p rustfmt --command "rustfmt ./src/main.rs; SLACK_WEBHOOK='https://localhost/slack' KAFKA_LAG_EXPORTER='http://localhost:8000/lag' cargo run"`
+
+## Release build
+
+`nix-build .`
