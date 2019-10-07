@@ -2,6 +2,7 @@ extern crate reqwest;
 
 use regex::Regex;
 use reqwest::Url;
+use slack_hook::{AttachmentBuilder, PayloadBuilder, Slack};
 use std::env;
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -18,7 +19,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let partition_regex = Regex::new(".*partition=\"([0-9]+)\".*").unwrap();
 
     let slack = env::var("SLACK_WEBHOOK").expect("Please set SLACK_WEBHOOK");
-    let slack_url = Url::parse(&slack).expect("SLACK_WEBHOOK must be a valid URL");
+    let _slack_url = Url::parse(&slack).expect("SLACK_WEBHOOK must be a valid URL"); // Just validation
     let lag_exporter = env::var("KAFKA_LAG_EXPORTER").expect("Please set KAFKA_LAG_EXPORTER");
     let lag_exporter_url =
         Url::parse(&lag_exporter).expect("KAFKA_LAG_EXPORTER must be a valid URL");
@@ -81,10 +82,39 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ms.to_vec()
         });
 
-    println!("{:#?}", metrics);
+    let ms: Vec<slack_hook::Attachment> = metrics?
+        .iter()
+        .map(|m| {
+            let colour = "#ff0000";
+            let text = format!("{} / {} / {}: {}", m.group, m.topic, m.partition, m.value);
+            AttachmentBuilder::new(text).color(colour).build().unwrap()
+        })
+        .collect();
 
-    // Format for Slack
-    // Send to Slack
+    let (ms2, text) = match ms {
+        _ if ms.is_empty() => (
+            vec![AttachmentBuilder::new(format!(
+                ":party-porg: - No lag above {} seconds",
+                threshold_u32
+            ))
+            .color("#00FF00")
+            .build()
+            .unwrap()],
+            "Kafka Lag",
+        ),
+        x => (x, "Kafka Lag <!channel>"),
+    };
 
-    Ok(())
+    let slack = Slack::new(slack.as_str()).unwrap();
+    let payload = PayloadBuilder::new()
+        .text(text)
+        .icon_url("https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTIwNjA4NjMzODYxOTMyNTU2/franz-kafka-9359401-1-402.jpg")
+        .channel("#ata-dev")
+        .username("Franz Kafka")
+        .attachments(ms2)
+        .build()?;
+
+    slack
+        .send(&payload)
+        .map_err(|_e| panic!("Could not send Slack message"))
 }
