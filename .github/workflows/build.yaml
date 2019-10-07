@@ -1,0 +1,24 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install nix
+      run: |
+        curl https://nixos.org/nix/install | sh
+        /home/runner/.nix-profile/bin/nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+        /home/runner/.nix-profile/bin/nix-channel --update
+    - name: Lint
+      run: /home/runner/.nix-profile/bin/nix-shell -p rustfmt --command "rustfmt --check ./src/main.rs"
+      env:
+        NIX_PATH: /home/runner/.nix-defexpr/channels
+    - name: Compile
+      run: /home/runner/.nix-profile/bin/nix-shell -p cargo -p pkgconfig -p openssl --command "cargo build"
+      env:
+        NIX_PATH: /home/runner/.nix-defexpr/channels
