@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - '*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install nix
+      run: |
+        curl https://nixos.org/nix/install | sh
+        /home/runner/.nix-profile/bin/nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+        /home/runner/.nix-profile/bin/nix-channel --update
+    - name: Compile
+      run: /home/runner/.nix-profile/bin/nix-build
+      env:
+        NIX_PATH: /home/runner/.nix-defexpr/channels
+    - name: Archive binary
+      uses: actions/upload-artifact@v1
+      with:
+        name: kafka-lag-slacker
+        path: result/bin/kafka-lag-slacker
