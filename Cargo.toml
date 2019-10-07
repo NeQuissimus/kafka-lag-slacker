@@ -1,5 +1,5 @@
 [package]
-name = "kafka-lag-slack"
+name = "kafka-lag-slacker"
 version = "0.1.0"
 authors = ["Tim Steinbach <tim@nequissimus.com>"]
 edition = "2018"
