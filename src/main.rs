@@ -27,6 +27,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let threshold_u32 = threshold
         .parse::<u32>()
         .expect("THRESHOLD must be a valid integer");
+    let channel = env::var("SLACK_CHANNEL")
+        .and_then(|c: String| match c.as_str() {
+            s if s.starts_with("#") => Ok(s.to_string()),
+            _ => Err(std::env::VarError::NotPresent),
+        })
+        .expect("Please set SLACK_CHANNEL, which must be prefixed with #");
 
     let metric = "kafka_consumergroup_group_lag_seconds";
     let metric_prefix = format!("{}{{", metric);
@@ -109,7 +115,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let payload = PayloadBuilder::new()
         .text(text)
         .icon_url("https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTIwNjA4NjMzODYxOTMyNTU2/franz-kafka-9359401-1-402.jpg")
-        .channel("#ata-dev")
+        .channel(channel)
         .username("Franz Kafka")
         .attachments(ms2)
         .build()?;
