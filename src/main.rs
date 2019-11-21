@@ -2,7 +2,9 @@ extern crate reqwest;
 
 use regex::Regex;
 use reqwest::Url;
-use slack_hook::{AttachmentBuilder, PayloadBuilder, Slack};
+use slack_hook::{
+    AttachmentBuilder, PayloadBuilder, Slack, SlackText, SlackTextContent, SlackUserLink,
+};
 use std::env;
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -106,14 +108,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .color("#00FF00")
             .build()
             .unwrap()],
-            "Kafka Lag",
+            vec![Text("Kafka Lag".into())],
         ),
-        x => (x, "Kafka Lag <!channel>"),
+        x => (
+            x,
+            vec![
+                Text("Kafka Lag".into()),
+                User(SlackUserLink::new("@channel")),
+            ],
+        ),
     };
 
+    use SlackTextContent::{Text, User};
+
     let slack = Slack::new(slack.as_str()).unwrap();
+
     let payload = PayloadBuilder::new()
-        .text(text)
+        .text(SlackText::from(&text[..]))
         .icon_url("https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTIwNjA4NjMzODYxOTMyNTU2/franz-kafka-9359401-1-402.jpg")
         .channel(channel)
         .username("Franz Kafka")
