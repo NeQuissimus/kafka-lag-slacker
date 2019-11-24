@@ -36,7 +36,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .expect("Please set SLACK_CHANNEL, which must be prefixed with #");
 
-    let metric = "kafka_consumergroup_group_lag_seconds";
+    let by_count = env::var("BY_COUNT").map(|_| true).unwrap_or(false);
+
+    let metric = match by_count {
+        x if x => "kafka_consumergroup_group_lag",
+        _ => "kafka_consumergroup_group_lag_seconds",
+    };
+
     let metric_prefix = format!("{}{{", metric);
 
     let metrics = reqwest::get(lag_exporter_url)
@@ -101,21 +107,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (ms2, text) = match ms {
         _ if ms.is_empty() => (
-            vec![AttachmentBuilder::new(format!(
-                ":party-porg: - No lag above {} seconds",
-                threshold_u32
-            ))
-            .color("#00FF00")
-            .build()
-            .unwrap()],
+            vec![
+                AttachmentBuilder::new(format!(":party-porg: - No lag above {}", threshold_u32))
+                    .color("#00FF00")
+                    .build()
+                    .unwrap(),
+            ],
             vec![Text("Kafka Lag".into())],
         ),
         x => (
             x,
-            vec![
-                Text("Kafka Lag".into()),
-                User(SlackUserLink::new("@channel")),
-            ],
+            vec![Text("Kafka Lag".into()), User(SlackUserLink::new("!here"))],
         ),
     };
 

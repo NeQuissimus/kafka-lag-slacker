@@ -2,6 +2,7 @@
 
 ## Environment
 
+- `BY_COUNT`: If non-empty, fetch lag count instead of estimated seconds
 - `KAFKA_LAG_EXPORTER`: [Kafka Lag Exporter](https://github.com/lightbend/kafka-lag-exporter) endpoint
 - `SLACK_CHANNEL`: Slack channel to post to
 - `SLACK_WEBHOOK`: [Slack webhook](https://api.slack.com/incoming-webhooks) endpoint
