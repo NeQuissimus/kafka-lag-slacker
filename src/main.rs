@@ -117,7 +117,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ),
         x => (
             x,
-            vec![Text("Kafka Lag".into()), User(SlackUserLink::new("!channel"))],
+            vec![
+                Text("Kafka Lag".into()),
+                User(SlackUserLink::new("!channel")),
+            ],
         ),
     };
 
